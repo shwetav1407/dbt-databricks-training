@@ -1,0 +1,122 @@
+# Cursor Rules for dbt-databricks-training-internal
+
+## Golden Rules
+* Don't put emojis in SQL, Python, or YAML code files
+* **NEVER GIVE UP!** Always investigate thoroughly before concluding something is missing or broken
+* DON'T GIVE UP SO EASILY before careful assessment
+* Do not hallucinate
+* Don't run things after deployment unless specifically asked to do so (e.g. running a pipeline after deployment via DAB, triggering a dbt run, etc)
+* Don't give me too many docs. Let's keep docs neat and consolidate as much as possible
+
+## DO NOT REPEAT SAME MISTAKES
+
+* Do not hallucinate
+* Always read existing dbt models before generating new ones or modifying existing ones
+* Always check `dbt_project.yml` before creating new models to understand project structure and naming conventions
+* Always verify `profiles.yml` or environment variable configuration before running dbt commands
+* Always clean compiled/target files before debugging (`rm -rf target/`)
+
+## Technology Stack
+
+This repository is focused on:
+- **dbt (Data Build Tool)** - SQL-first data transformations on Databricks
+- **Databricks** - Lakehouse platform (Unity Catalog, SQL Warehouses, Lakeflow Jobs)
+- **Spark Declarative Pipelines (SDP)** - Where applicable alongside dbt
+- **Databricks Asset Bundles (DABs)** - For deployment and orchestration
+- **Lakeflow Jobs** - For orchestrating dbt runs and related tasks
+- **Python** - For dbt macros, custom tests, and utility scripts
+
+## dbt Best Practices
+
+### Project Structure
+```
+project_name/
+  dbt_project.yml
+  profiles.yml          # gitignored - use env vars or .env.local
+  packages.yml          # dbt package dependencies
+  models/
+    staging/            # 1:1 with source tables, light transformations
+    intermediate/       # Business logic transformations
+    marts/              # Final business-ready tables/views
+  macros/               # Reusable SQL/Jinja macros
+  tests/                # Custom data tests
+  seeds/                # Static reference data (CSV)
+  snapshots/            # SCD Type 2 tracking
+  analyses/             # Ad-hoc analytical queries
+```
+
+### Naming Conventions
+- **Models:** `lowercase_snake_case` always
+  - Staging: `stg_<source>__<table>.sql` (double underscore between source and table)
+  - Intermediate: `int_<description>.sql`
+  - Marts: `fct_<description>.sql` (facts) or `dim_<description>.sql` (dimensions)
+- **Sources:** Defined in `models/staging/_sources.yml`
+- **Tests:** Defined in schema YAML files alongside models
+- **Macros:** `lowercase_snake_case` matching their purpose
+
+### SQL Style Guide
+- Use **UPPERCASE** for SQL keywords (`SELECT`, `FROM`, `WHERE`, `JOIN`)
+- Use **lowercase_snake_case** for column names and aliases
+- Use CTEs (`WITH` clauses) instead of subqueries for readability
+- Always use explicit `JOIN` types (`INNER JOIN`, `LEFT JOIN`) - never implicit joins
+- One column per line in SELECT statements for readability and clean diffs
+- Always include a final comma in SELECT lists (trailing comma style) where dbt supports it
+- Add `{{ config() }}` block at the top of each model
+- Use `ref()` for model references and `source()` for source references - never hardcode table names
+
+### Materialisation Strategy (Databricks)
+- **Staging models:** `view` (lightweight, always fresh)
+- **Intermediate models:** `ephemeral` or `view` depending on complexity
+- **Mart models (facts/dims):** `table` or `incremental` depending on volume
+- **Snapshots:** Use `snapshot` materialisation for SCD Type 2
+
+### Data Quality & Testing
+- Every model MUST have at least a schema YAML file with:
+  - `unique` and `not_null` tests on primary keys
+  - `accepted_values` tests on categorical columns where appropriate
+  - `relationships` tests for foreign key integrity
+- Use `dbt_expectations` or `dbt_utils` packages for advanced testing
+- Document all models with descriptions in YAML files
+
+### Jinja & Macros
+- Use `{{ ref('model_name') }}` for model references
+- Use `{{ source('source_name', 'table_name') }}` for source references
+- Use `{{ config(materialized='table') }}` for model configuration
+- Keep Jinja logic simple and readable - complex logic goes in macros
+- Document macros with `{# comment #}` blocks explaining purpose and parameters
+
+## Databricks-Specific Guidelines
+
+### Unity Catalog
+- Always use three-level namespace: `catalog.schema.table`
+- Configure catalog and schema in `dbt_project.yml` or `profiles.yml`
+- Use variables for environment-specific catalog/schema names
+
+### Lakeflow Jobs
+- Use DABs (`databricks.yml`) for job definitions
+- Keep job definitions in a `bundles/` or `databricks/` directory
+- Use task dependencies to define execution order
+- Set appropriate retry policies and timeouts
+
+### Profiles Configuration
+- NEVER commit `profiles.yml` with real credentials
+- Use environment variables: `{{ env_var('DATABRICKS_HOST') }}`
+- Use `.env.local` (gitignored) for local development
+- Document required environment variables in README
+
+## Collaboration Standards
+
+### Branch Naming
+- `feature/<jira-ticket>-<description>` for new features
+- `bugfix/<jira-ticket>-<description>` for bug fixes
+- All lowercase, hyphens for separators
+
+### Commit Messages
+- Be descriptive about what changed and why
+- Reference JIRA tickets where applicable
+
+### Pull Requests
+- Add at least ONE reviewer
+- Rebase with `origin/main` before merging
+- Use SQUASH-MERGE to keep main branch clean
+- Ensure `dbt build` passes before requesting review

@@ -1,0 +1,116 @@
+# macOS system files
+.DS_Store
+**/.DS_Store
+
+# ========================================
+# dbt
+# ========================================
+
+# dbt compiled and run artifacts
+target/
+dbt_packages/
+dbt_modules/
+logs/
+
+# dbt profiles (contains credentials)
+profiles.yml
+
+# dbt documentation site (generated)
+docs/
+
+# ========================================
+# Python
+# ========================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[codz]
+*$py.class
+*.so
+
+# Virtual environments
+.venv
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# ========================================
+# Environments & Secrets
+# ========================================
+
+# Environment files (NEVER commit secrets!)
+# See ACCESS_TOKEN_HANDLING.md for token handling policy
+.env
+.env.local
+.env.*.local
+*.local.env
+config.local.py
+config.local.yaml
+config.local.json
+secrets.yaml
+secrets.json
+.envrc
+
+# Databricks CLI config
+.databrickscfg
+
+# ========================================
+# Databricks Asset Bundles
+# ========================================
+
+# DAB build artifacts
+.databricks/
+
+# ========================================
+# IDE & Editor Files
+# ========================================
+
+# VS Code / Cursor
+.vscode/
+.cursorignore
+.cursorindexingignore
+
+# JetBrains
+.idea/
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ========================================
+# Misc
+# ========================================
+
+# Log files
+*.log
+
+# Node (if using dbt docs or related tooling)
+node_modules/
+
+# Ruff / linting cache
+.ruff_cache/
+.mypy_cache/
+.user.yml
