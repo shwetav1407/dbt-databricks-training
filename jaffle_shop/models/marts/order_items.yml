@@ -11,5 +11,6 @@ models:
         description: The foreign key relating to the order this item belongs to.
         data_tests:
           - relationships:
-              to: ref('orders')
-              field: order_id
+              arguments:
+                to: ref('orders')
+                field: order_id
